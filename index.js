@@ -41,6 +41,9 @@ async function run() {
     // database connection
 
     const booksCollection = client.db("wisdomBookDb").collection("allBooks");
+    const catagoryCollection = client
+      .db("wisdomBookDb")
+      .collection("categories");
 
     // api for insert a book information into allbooks collection
     app.post("/books", async (req, res) => {
@@ -52,6 +55,20 @@ async function run() {
     //api for retrive all books infromation into allbooks collection
     app.get("/books", async (req, res) => {
       const result = await booksCollection.find().toArray();
+      res.send(result);
+    });
+
+    //api for retrive specific category data
+    app.get("/category/:category", async (req, res) => {
+      const categoryName = req.params.category;
+      const query = { catagory: categoryName };
+      const result = await booksCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // api for retrve catgories name from categoriesCollection
+    app.get("/categories", async (req, res) => {
+      const result = await catagoryCollection.find().toArray();
       res.send(result);
     });
   } finally {
