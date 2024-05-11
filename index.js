@@ -41,6 +41,9 @@ async function run() {
     // database connection
 
     const booksCollection = client.db("wisdomBookDb").collection("allBooks");
+    const borrowedBooksCollection = client
+      .db("wisdomBookDb")
+      .collection("borrowedBooks");
     const catagoryCollection = client
       .db("wisdomBookDb")
       .collection("categories");
@@ -58,15 +61,7 @@ async function run() {
       res.send(result);
     });
 
-    //api for retrive specific category data
-    app.get("/category/:category", async (req, res) => {
-      const categoryName = req.params.category;
-      const query = { catagory: categoryName };
-      const result = await booksCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    // api for tetrive specific one book information into allbooks collectin
+    // api for retrive specific one book information into allbooks collectin
     app.get("/book/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -83,7 +78,7 @@ async function run() {
         $set: {
           bookName: data.name,
           photo: data.photo,
-          authorName: data.name,
+          authorName: data.author,
           catagory: data.catagory,
           rating: data.rating,
         },
@@ -92,9 +87,24 @@ async function run() {
       res.send(result);
     });
 
+    //api for retrive specific category data from booksCollection
+    app.get("/category/:category", async (req, res) => {
+      const categoryName = req.params.category;
+      const query = { catagory: categoryName };
+      const result = await booksCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // api for retrve catgories name from categoriesCollection
     app.get("/categories", async (req, res) => {
       const result = await catagoryCollection.find().toArray();
+      res.send(result);
+    });
+
+    //api for make borrowCollection insert and the same specific book quantity decrement
+    app.post("/borrow/:id", async (req, res) => {
+      const bookId = req.params.id;
+      const result = await borrowedBooksCollection.insertOne(req.body);
       res.send(result);
     });
   } finally {
