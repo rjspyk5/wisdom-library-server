@@ -62,6 +62,24 @@ async function run() {
       const result = await booksCollection.findOne(query);
       res.send(result);
     });
+
+    // api for update specific data into allbooks colleciton
+    app.patch("/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          bookName: data.name,
+          photo: data.photo,
+          authorName: data.name,
+          catagory: data.catagory,
+          rating: data.rating,
+        },
+      };
+      const result = await booksCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
