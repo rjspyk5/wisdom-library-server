@@ -42,10 +42,16 @@ async function run() {
 
     const booksCollection = client.db("wisdomBookDb").collection("allBooks");
 
+    // api for insert a book information into allbooks collection
     app.post("/books", async (req, res) => {
       const data = req.body;
       const result = await booksCollection.insertOne(data);
+      res.send(result);
+    });
 
+    //api for retrive all books infromation into allbooks collection
+    app.get("/books", async (req, res) => {
+      const result = await booksCollection.find().toArray();
       res.send(result);
     });
   } finally {
