@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 // middleware setup
@@ -63,6 +63,32 @@ async function run() {
       const categoryName = req.params.category;
       const query = { catagory: categoryName };
       const result = await booksCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // api for tetrive specific one book information into allbooks collectin
+    app.get("/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await booksCollection.findOne(query);
+      res.send(result);
+    });
+
+    // api for update specific data into allbooks colleciton
+    app.patch("/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          bookName: data.name,
+          photo: data.photo,
+          authorName: data.name,
+          catagory: data.catagory,
+          rating: data.rating,
+        },
+      };
+      const result = await booksCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
