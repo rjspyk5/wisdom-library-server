@@ -119,15 +119,17 @@ async function run() {
       if (isDuplicate) {
         return res.send("duplicate request");
       }
-      // insert borrow details
-
+      // insert borrowCollection
       const result = await borrowedBooksCollection.insertOne(req.body);
+      // decrement allbooks quantity
       const query2 = { _id: new ObjectId(bookId) };
       const result2 = await booksCollection.updateOne(query2, {
         $inc: { qunatity: -1 },
       });
       res.send(result2);
     });
+
+    //api for make return req
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
