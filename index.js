@@ -112,8 +112,21 @@ async function run() {
     //api for make borrowCollection insert and the same specific book quantity decrement
     app.post("/borrow/:id", async (req, res) => {
       const bookId = req.params.id;
+      const email = req.body.email;
+      // checking that in borrow collection this bookid with this useremail already have or not
+      const query = { bookId: bookId, email: email };
+      const isDuplicate = await borrowedBooksCollection.findOne(query);
+      if (isDuplicate) {
+        return res.send("duplicate request");
+      }
+      // insert borrow details
+
       const result = await borrowedBooksCollection.insertOne(req.body);
-      res.send(result);
+      const query2 = { _id: new ObjectId(bookId) };
+      const result2 = await booksCollection.updateOne(query2, {
+        $inc: { qunatity: -1 },
+      });
+      res.send(result2);
     });
   } finally {
     // Ensures that the client will close when you finish/error
