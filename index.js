@@ -145,6 +145,23 @@ async function run() {
     });
 
     //api for make return req
+
+    app.delete("/borrow/:id", async (req, res) => {
+      const borrowId = req.params.id;
+      const bookId = req.query.book;
+      // delte one book form broower collection
+      const result = await borrowedBooksCollection.deleteOne({
+        _id: new ObjectId(borrowId),
+      });
+
+      // increase booksCollectionQuantity
+      const result2 = await booksCollection.updateOne(
+        {
+          _id: new ObjectId(bookId),
+        },
+        { $inc: { quantity: 1 } }
+      );
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
