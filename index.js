@@ -101,6 +101,14 @@ async function run() {
       res.send(result);
     });
 
+    // api for retrive a user borrowCollection
+    app.get("/borrow", async (req, res) => {
+      const userEmail = req.query?.email;
+      const query = { email: userEmail };
+      const result = await borrowedBooksCollection.find(query).toArray();
+      res.send(result);
+    });
+
     //api for make borrowCollection insert and the same specific book quantity decrement
     app.post("/borrow/:id", async (req, res) => {
       const bookId = req.params.id;
