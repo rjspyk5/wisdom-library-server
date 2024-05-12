@@ -51,6 +51,7 @@ async function run() {
     // api for insert a book information into allbooks collection
     app.post("/books", async (req, res) => {
       const data = req.body;
+
       const result = await booksCollection.insertOne(data);
       res.send(result);
     });
@@ -119,13 +120,27 @@ async function run() {
       if (isDuplicate) {
         return res.send("duplicate request");
       }
-      // insert borrowCollection
-      const result = await borrowedBooksCollection.insertOne(req.body);
+
+      // checking that user borrowing book count 3 or not
+      const totalBookCount = await borrowedBooksCollection
+        .find({
+          email: email,
+        })
+        .toArray();
+
+      if (totalBookCount.length >= 3) {
+        return res.send("limit end");
+      }
       // decrement allbooks quantity
       const query2 = { _id: new ObjectId(bookId) };
       const result2 = await booksCollection.updateOne(query2, {
-        $inc: { qunatity: -1 },
+        $inc: {
+          quantity: -1,
+        },
       });
+
+      // insert borrowCollection
+      const result = await borrowedBooksCollection.insertOne(req.body);
       res.send(result2);
     });
 
