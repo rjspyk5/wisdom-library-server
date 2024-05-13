@@ -13,10 +13,10 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "wisdom-library-1acce.web.app",
+      "https://wisdom-library-1acce.web.app",
       "http://localhost:5173",
       "http://localhost:5174",
-      "wisdom-library-1acce.firebaseapp.com",
+      "https://wisdom-library-1acce.firebaseapp.com",
     ],
     credentials: true,
   })
@@ -36,7 +36,11 @@ const verifyToken = async (req, res, next) => {
     next();
   });
 };
-
+const cookieOption = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+};
 //token api create
 app.post("/jwt", async (req, res) => {
   const user = req.body;
@@ -44,13 +48,7 @@ app.post("/jwt", async (req, res) => {
     expiresIn: "1h",
   });
 
-  res
-    .cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    })
-    .send({ success: true });
+  res.cookie("token", token, cookieOption).send({ success: true });
 });
 
 app.post("/logout", async (req, res) => {
@@ -74,9 +72,9 @@ async function run() {
     // await client.connect();
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
 
     // database connection
 
@@ -89,15 +87,22 @@ async function run() {
       .collection("categories");
 
     // api for insert a book information into allbooks collection
-    app.post("/books", async (req, res) => {
+    app.post("/books", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbbiden" });
+      }
       const data = req.body;
-
       const result = await booksCollection.insertOne(data);
       res.send(result);
     });
 
     //api for retrive all books infromation into allbooks collection
-    app.get("/books", async (req, res) => {
+    app.get("/books", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbbiden" });
+      }
       const result = await booksCollection.find().toArray();
       res.send(result);
     });
@@ -111,7 +116,11 @@ async function run() {
     });
 
     // api for update specific data into allbooks colleciton
-    app.patch("/book/:id", async (req, res) => {
+    app.patch("/book/:id", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbbiden" });
+      }
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) };
