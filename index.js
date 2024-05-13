@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 // middleware setup
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
@@ -19,6 +22,42 @@ app.use(
   })
 );
 
+//cusom middleware make
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).send({ message: "not authorized" });
+  }
+  jwt.verify(token, process.env.access_token, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
+//token api create
+app.post("/jwt", async (req, res) => {
+  const user = req.body;
+  const token = jwt.sign(user, process.env.access_token, {
+    expiresIn: "1h",
+  });
+
+  res
+    .cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    })
+    .send({ success: true });
+});
+
+app.post("/logout", async (req, res) => {
+  const user = req.body;
+  res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+});
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.omgilvs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -28,6 +67,7 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -145,7 +185,6 @@ async function run() {
     });
 
     //api for make return req
-
     app.delete("/borrow/:id", async (req, res) => {
       const borrowId = req.params.id;
       const bookId = req.query.book;
@@ -161,6 +200,7 @@ async function run() {
         },
         { $inc: { quantity: 1 } }
       );
+      res.send({ result, result2 });
     });
   } finally {
     // Ensures that the client will close when you finish/error
