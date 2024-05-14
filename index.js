@@ -53,7 +53,9 @@ app.post("/jwt", async (req, res) => {
 
 app.post("/logout", async (req, res) => {
   const user = req.body;
-  res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+  res
+    .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
+    .send({ success: true });
 });
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.omgilvs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
