@@ -38,8 +38,8 @@ const verifyToken = async (req, res, next) => {
 };
 const cookieOption = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  secure: true,
+  sameSite: "none",
 };
 //token api create
 app.post("/jwt", async (req, res) => {
@@ -100,11 +100,7 @@ async function run() {
     });
 
     //api for retrive all books infromation into allbooks collection
-    app.get("/books", verifyToken, async (req, res) => {
-      const email = req.query.email;
-      if (email !== req.user.email) {
-        return res.status(403).send({ message: "forbbiden" });
-      }
+    app.get("/books", async (req, res) => {
       const result = await booksCollection.find().toArray();
       res.send(result);
     });
