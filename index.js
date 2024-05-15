@@ -38,14 +38,14 @@ const verifyToken = async (req, res, next) => {
 };
 const cookieOption = {
   httpOnly: true,
-  secure: true,
-  sameSite: "none",
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
 };
 //token api create
 app.post("/jwt", async (req, res) => {
   const user = req.body;
   const token = jwt.sign(user, process.env.access_token, {
-    expiresIn: "1h",
+    expiresIn: "7d",
   });
 
   res.cookie("token", token, cookieOption).send({ success: true });
@@ -54,7 +54,7 @@ app.post("/jwt", async (req, res) => {
 app.post("/logout", async (req, res) => {
   const user = req.body;
   res
-    .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
+    .clearCookie("token", { maxAge: 0, ...cookieOption })
     .send({ success: true });
 });
 
