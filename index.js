@@ -105,6 +105,14 @@ async function run() {
       res.send(result);
     });
 
+    // api for search books based on title
+    app.get("/search/books", async (req, res) => {
+      const text = req.query.text.toLowerCase();
+      const filter = { bookName: { $regex: text, $options: "i" } };
+      const result = await booksCollection.find(filter).toArray();
+      res.send(result);
+    });
+
     // api for retrive specific one book information into allbooks collectin
     app.get("/book/:id", async (req, res) => {
       const id = req.params.id;
